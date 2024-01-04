@@ -11,22 +11,22 @@ GRID_SIZE = 20
 GRID_WIDTH = SCREEN_WIDTH // GRID_SIZE
 GRID_HEIGHT = SCREEN_HEIGHT // GRID_SIZE
 
-# Moving direction
+# Movement directions
 UP = (0, -1)
 DOWN = (0, 1)
 LEFT = (-1, 0)
 RIGHT = (1, 0)
 
-# Background color is black
+# Background color
 BOARD_BACKGROUND_COLOR = (0, 0, 0)
 
-# Snake speed
+# Speed of the game
 SPEED = 10
 
 # Setting up the game window
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
 
-# Title of the playing field window
+# Title of the game window
 pygame.display.set_caption('The Snake')
 
 # Setting the time
@@ -39,31 +39,39 @@ class GameObject:
     It contains common attributes of game objects.
     """
 
-    def __init__(self):
-        self.body_color = None
+    def __init__(self) -> None:
+        """Inits GameObject."""
+        self.body_color = BOARD_BACKGROUND_COLOR
         self.position = ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))
 
     def draw(self):
+        """
+        An abstract method that should determine
+        how an object will appear on the screen.
+        """
         pass
 
 
 class Snake(GameObject):
     """The class describing the snake and its behavior."""
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Inits the snake."""
         super().__init__()
         self.body_color = (60, 179, 113)
         self.reset()
         self.direction = RIGHT
-        self.last = None
-        self.next_direction = None
+        self.last: Optional[Tuple[int, int]] = None
+        self.next_direction: Optional[Tuple[int, int]] = None
 
-    def update_direction(self):
+    def update_direction(self) -> None:
+        """Updates the snake's direction."""
         if self.next_direction:
             self.direction = self.next_direction
             self.next_direction = None
 
     def move(self) -> List[Tuple[int, int]]:
+        """Updates the position of the snake (coordinates of each segment)."""
         head_position = self.get_head_position()
         self.last = self.positions[-1]
         new_head_position = (
@@ -79,16 +87,18 @@ class Snake(GameObject):
         return self.positions
 
     def get_head_position(self) -> Tuple[int, int]:
+        """Gets the position of the snake's head."""
         return self.positions[0]
 
-    def reset(self):
-        """Resets the snake"""
+    def reset(self) -> None:
+        """Resets the snake."""
         self.length = 1
         self.positions = [self.position]
         self.direction = choice([UP, DOWN, LEFT, RIGHT])
         screen.fill(color=BOARD_BACKGROUND_COLOR)
 
     def draw(self, surface):
+        """Draws the snake on the screen."""
         for position in self.positions[:-1]:
             rect = (
                 pygame.Rect((position[0], position[1]), (GRID_SIZE, GRID_SIZE))
@@ -96,13 +106,13 @@ class Snake(GameObject):
             pygame.draw.rect(surface, self.body_color, rect)
             pygame.draw.rect(surface, (60, 179, 113), rect, 1)
 
-        # Отрисовка головы змейки
+        # Drawing the snake's head
         head = self.positions[0]
         head_rect = pygame.Rect((head[0], head[1]), (GRID_SIZE, GRID_SIZE))
         pygame.draw.rect(surface, self.body_color, head_rect)
         pygame.draw.rect(surface, (60, 179, 113), head_rect, 1)
 
-        # Затирание последнего сегмента
+        # Painting over the last segment
         if self.last:
             last_rect = pygame.Rect(
                 (self.last[0], self.last[1]),
@@ -112,32 +122,37 @@ class Snake(GameObject):
 
 
 class Apple(GameObject):
-    """Класс, описывающий яблоко и действия c ним."""
+    """The class that describes the apple and its actions."""
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Inits the apple."""
         self.body_color = (250, 20, 60)
         self.position = self.randomize_position()
 
     def randomize_position(
             self,
-            occupied_positions: Optional[List[Tuple[int, int]]] = None) -> Tuple[int, int]:
-        """Метод отвечающий за случайное появление яблока на экране."""
+            occupied_positions: Optional[List[Tuple[int, int]]] = None
+    ) -> Tuple[int, int]:
+        """
+        The method responsible for the random appearance
+        of the apple on the screen.
+        """
         occupied_positions = occupied_positions or []
         available_positions = [
-            (x * GRID_SIZE,
-             y * GRID_SIZE) for x in range(GRID_WIDTH) for y in range(GRID_HEIGHT)
+            (x * GRID_SIZE, y * GRID_SIZE)
+            for x in range(GRID_WIDTH) for y in range(GRID_HEIGHT)
             if (x * GRID_SIZE, y * GRID_SIZE) not in occupied_positions
         ]
         if available_positions:
             new_position = choice(available_positions)
             self.position = new_position
         else:
-            # handle case when no available positions
+            # Handle case when no available positions
             pass
         return self.position
 
-    # Метод draw класса Apple
     def draw(self, surface):
+        """Draws the apple on the screen."""
         rect = pygame.Rect(
             (self.position[0], self.position[1]),
             (GRID_SIZE, GRID_SIZE)
@@ -146,8 +161,8 @@ class Apple(GameObject):
         pygame.draw.rect(surface, (255, 160, 122), rect, 1)
 
 
-# Функция обработки действий пользователя
-def handle_keys(game_object):
+def handle_keys(game_object) -> None:
+    """User action processing."""
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -163,7 +178,7 @@ def handle_keys(game_object):
 
 
 def main():
-    # Тут нужно создать экземпляры классов
+    """Main Game Loop."""
     snake = Snake()
     apple = Apple()
 
