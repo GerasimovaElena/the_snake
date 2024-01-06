@@ -44,12 +44,12 @@ class GameObject:
         self.body_color = BOARD_BACKGROUND_COLOR
         self.position = ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))
 
-    def draw(self):
+    def draw(self, surface):
         """
         An abstract method that should determine
         how an object will appear on the screen.
         """
-        pass
+        raise NotImplementedError('Method not implemented!')
 
 
 class Snake(GameObject):
@@ -164,17 +164,20 @@ class Apple(GameObject):
 def handle_keys(game_object) -> None:
     """User action processing."""
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN
+                                         and event.key == pygame.K_ESCAPE):
             pygame.quit()
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP and game_object.direction != DOWN:
-                game_object.next_direction = UP
-            elif event.key == pygame.K_DOWN and game_object.direction != UP:
-                game_object.next_direction = DOWN
-            elif event.key == pygame.K_LEFT and game_object.direction != RIGHT:
-                game_object.next_direction = LEFT
-            elif event.key == pygame.K_RIGHT and game_object.direction != LEFT:
-                game_object.next_direction = RIGHT
+            turns = {
+                (pygame.K_UP, DOWN): UP,
+                (pygame.K_DOWN, UP): DOWN,
+                (pygame.K_LEFT, RIGHT): LEFT,
+                (pygame.K_RIGHT, LEFT): RIGHT,
+            }
+            for (k_key, direction) in turns:
+                if event.key == k_key and game_object.direction != direction:
+                    game_object.next_direction = turns.get((k_key, direction))
+                    break
 
 
 def main():
